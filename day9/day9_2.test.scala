@@ -14,7 +14,7 @@ class Day92Tests extends munit.FunSuite {
       (7, 1),
       (7, 5),
       (1, 5)
-    ))).compute._2 == 15)
+    ))).compute == 15)
   }
 
   test("Work with horizontal dents") {
@@ -27,7 +27,7 @@ class Day92Tests extends munit.FunSuite {
       (5, 4),
       (5, 6),
       (1, 6)
-    ))).compute._2 == 15)
+    ))).compute == 15)
   }
 
   test("Work with big area dent") {
@@ -40,6 +40,6 @@ class Day92Tests extends munit.FunSuite {
       (7, 1),
       (7, 5),
       (1, 5)
-    ))).compute._2 == 12)
+    ))).compute == 12)
   }
 }

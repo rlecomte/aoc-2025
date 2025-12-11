@@ -1,49 +1,44 @@
 case class Input(redTiles: List[(Long, Long)]) {
-
   val connections = redTiles.zip(redTiles.tail ++ List(redTiles.head))
-  val verticals = connections.filter { case ((x1, y1), (x2, y2)) => x1 == x2 }
-  val horizontals = connections.filter { case ((x1, y1), (x2, y2)) => y1 == y2 }
 
   def isInside(col: Long, row: Long) =
     connections.filter { case ((x1, y1), (x2, y2)) =>
       x1 == x2 && col < x1 && row >= Math.min(y1, y2) && row < Math.max(y1, y2)
     }.size % 2 != 0
 
-  def intersect(colMin: Long, colMax: Long, rowMin: Long, rowMax: Long): Boolean = {
-    val verticalCheck = verticals.exists { case ((x, y1), (_, y2)) =>
-        if (x > colMin && x < colMax) {
-          val overlapMin = Math.max(rowMin, y1)
-          val overlapMax = Math.min(rowMax, y2)
-          (overlapMin < overlapMax) || rowMin == Math.min(y1, y2) && rowMax == Math.max(y1, y2)
-        } else false
+  def valid(colMin: Long, colMax: Long, rowMin: Long, rowMax: Long): Boolean =
+    connections.forall { case ((x1, y1), (x2, y2)) =>
+      if (x1 == x2) {
+        x1 <= colMin ||
+          colMax <= x1 ||
+          y1.max(y2) <= rowMin ||
+          y1.min(y2) >= rowMax
+      } else {
+        y1 <= rowMin ||
+          rowMax <= y1 ||
+          x1.max(x2) <= colMin ||
+          x1.min(x2) >= colMax
+      }
     }
-
-    val horizontalCheck = horizontals.exists { case ((x1, y), (x2, _)) =>
-       if (y > rowMin && y < rowMax) {
-         val overlapMin = Math.max(colMin, x1)
-         val overlapMax = Math.min(colMax, x2)
-         (overlapMin < overlapMax) || colMin == Math.min(x1, x2) && colMax == Math.max(x1, x2)
-       } else false
-    }
-
-    verticalCheck || horizontalCheck
-  }
 }
 
 class Compute(input: Input):
-  def compute =
-    val r = (for
-      (a, b)   <- input.redTiles
-      (c, d)   <- input.redTiles
+  case class Rectangle(colMin: Long, colMax: Long, rowMin: Long, rowMax: Long):
+    val area: Long = (colMax - colMin + 1) * (rowMax - rowMin + 1)
+
+  def rectangles = (for
+      ((a, b), i) <- input.redTiles.zipWithIndex
+      (c, d)      <- input.redTiles.drop(i + 1)
       colMin = Math.min(a, c)
       colMax = Math.max(a, c)
       rowMin = Math.min(b, d)
       rowMax = Math.max(b, d)
       middleCol = colMin + ((colMax - colMin) / 2)
       middleRow = rowMin + ((rowMax - rowMin) / 2)
-      if (middleCol == colMin || middleRow == rowMin || input.isInside(middleCol, middleRow)) && !input.intersect(colMin, colMax, rowMin, rowMax)
-    yield ((a, b), (c, d)) -> (colMax - colMin + 1) * (rowMax - rowMin + 1)).maxBy(_._2)
-    r
+      if input.isInside(middleCol, middleRow)
+  yield Rectangle(colMin, colMax, rowMin, rowMax)).sortBy(-_.area)
+
+  def compute = rectangles.find(r => input.valid(r.colMin, r.colMax, r.rowMin, r.rowMax)).get.area
 
 println(s"result: \n ${new Compute(Input(input)).compute}")
 
