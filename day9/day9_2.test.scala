@@ -3,7 +3,7 @@
 
 import day9_2.*
 
-class Day9Tests extends munit.FunSuite {
+class Day92Tests extends munit.FunSuite {
   test("Work with vertical dents") {
     assert(new Compute(Input(List(
       (1, 1),
@@ -28,5 +28,18 @@ class Day9Tests extends munit.FunSuite {
       (5, 6),
       (1, 6)
     ))).compute._2 == 15)
+  }
+
+  test("Work with big area dent") {
+    assert(new Compute(Input(List(
+      (1, 1),
+      (2, 1),
+      (2, 4),
+      (6, 4),
+      (6, 1),
+      (7, 1),
+      (7, 5),
+      (1, 5)
+    ))).compute._2 == 12)
   }
 }
