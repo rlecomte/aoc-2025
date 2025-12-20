@@ -43,11 +43,10 @@ def compute(shapes: Vector[Faces], regions: Vector[Region]) = regions.filter(res
 
 def resolve(shapes: Vector[Faces], region: Region): Boolean =
 
-  def spaceNeeded(remainingShapes: Vector[Int]): Int =
+  def requiredSpaceNeeded: Int =
     (for {
       (faces, i) <- shapes.zipWithIndex
-      if remainingShapes(i) > 0
-      count      = remainingShapes(i)
+      count      = region.shapes(i)
     } yield count * faces.space).sum
 
   def go(mask: Mask, remainingShapes: Vector[Int], occupiedSpace: Int): Boolean =
@@ -57,7 +56,6 @@ def resolve(shapes: Vector[Faces], region: Region): Boolean =
         if remainingShapes(i) > 0
         updatedRemainingShapes = remainingShapes.updated(i, remainingShapes(i) - 1)
         updatedOccupiedSpace  = occupiedSpace + faces.space
-        if spaceNeeded(updatedRemainingShapes) <=  region.width * region.height - updatedOccupiedSpace
         face       <- LazyList.from(faces.allFaces)
         subMask    <- LazyList.from(applyShape(mask, face, region.width, region.height))
         r          = go(subMask, updatedRemainingShapes, updatedOccupiedSpace)
@@ -69,7 +67,7 @@ def resolve(shapes: Vector[Faces], region: Region): Boolean =
       true
     }
 
-  var r = go(EmptyMask, region.shapes, 0)
+  var r = requiredSpaceNeeded <= region.width * region.height && go(EmptyMask, region.shapes, 0)
   println(s"Region $region resolved: $r")
   r
 
